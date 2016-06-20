@@ -1,0 +1,8 @@
+prime?23
+even?2 3
+prime?54677
+even?2 4
+prime?6575
+even?2 5
+even?1 1000002
+prime?999983

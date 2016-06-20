@@ -1,0 +1,4 @@
+True(prime?23)
+False(prime?54677)
+False(prime?6575)
+500001(even?1 1000002)

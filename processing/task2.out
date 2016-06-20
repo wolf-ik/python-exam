@@ -1,0 +1,4 @@
+1(even?2 3)
+2(even?2 4)
+2(even?2 5)
+True(prime?999983)
