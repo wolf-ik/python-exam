@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gcd</title>
+</head>
+<body>
+
+<table border="1">
+    <tr>
+        <th>x</th>
+        <th>y</th>
+        <th>gcd</th>
+    </tr>
+    {% for item in results %}
+    <tr>
+        <td>{{item.x}}</td>
+        <td>{{item.y}}</td>
+        <td>{{item.gcd}}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

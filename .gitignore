@@ -1,3 +1,6 @@
+# Database
+*/db.sqlite3
+
 #idea files
 .idea/*
 */.idea/*
@@ -7,6 +10,6 @@ venv/*
 */venv/*
 
 #pyc
-*/*.pyc
-*/*.py~
+**/*.pyc
+**/*.py~
 
