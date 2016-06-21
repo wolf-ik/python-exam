@@ -1,7 +1,14 @@
 from multiprocessing import Process
+from multiprocessing import Queue
+
+from Queue import Empty as QueueEmptyException
+from Queue import Full as QueueFullException
+
 from math import sqrt
 import argparse
 import datetime
+import time
+import random
 
 
 class Task(object):
@@ -59,10 +66,11 @@ def get_task(task_desc):
 
 
 class Solver(Process):
-    def __init__(self, filename=None, *args, **kwargs):
+    def __init__(self, filename=None, queue=None, *args, **kwargs):
         self._out_filename = filename
         self._out_file = None
-        self._tasks = []
+        self._tasks = queue
+
         if 'target' in kwargs.keys():
             del kwargs['target']
         super(Solver, self).__init__(target=self._solve, *args, **kwargs)
@@ -70,33 +78,39 @@ class Solver(Process):
     def run(self):
         with open(self._out_filename, 'w') as out_file:
             self._out_file = out_file
-            for task in self._tasks:
-                self._args = (task,)
-                super(Solver, self).run()
-
-    def add_task(self, task):
-        self._tasks.append(task)
+            while not self._tasks.empty():
+                try:
+                    task = self._tasks.get(False)
+                except QueueEmptyException:
+                    task = None
+                self._solve(task)
 
     def _solve(self, task):
-        if self._out_file is not None:
+        # The first process can solve all tasks,
+        # before the second process begins =\
+        time.sleep(random.random())
+        if self._out_file is not None and task is not None:
             self._out_file.write(task.solve() + '\n')
 
 
 class SolverPool(object):
-    def __init__(self, solvers_count, tasks):
-        self.solvers = SolverPool._create_solvers(solvers_count)
-        SolverPool._assign_tasks(tasks, self.solvers)
+    def __init__(self, solvers_count):
+        # The queue must be imported from multiprocessing
+        self.queue = Queue()
+        self.solvers = self._create_solvers(solvers_count)
 
-    @staticmethod
-    def _create_solvers(count):
+    def _create_solvers(self, count):
         template = "task%d.out"
-        return [Solver(filename=template % (num + 1)) for num in xrange(count)]
+        return [Solver(filename=template % (num + 1), queue=self.queue)
+                for num in xrange(count)]
 
-    @staticmethod
-    def _assign_tasks(tasks, solvers):
-        solvers_count = len(solvers)
-        for i, task in enumerate(tasks):
-            solvers[i % solvers_count].add_task(task)
+    def add_task(self, task):
+        if not isinstance(task, Task):
+            return
+        try:
+            self.queue.put(task)
+        except QueueFullException:
+            pass
 
     def start(self):
         for solver in self.solvers:
@@ -116,11 +130,13 @@ def parse_args():
 
 def main():
     args = parse_args()
-    tasks = []
+
+    solver_pool = SolverPool(args.process_count)
+
     with open(args.input_file, 'r') as f:
         for line in f:
-            tasks.append(get_task(line))
-    solver_pool = SolverPool(args.process_count, tasks)
+            solver_pool.add_task(get_task(line))
+
     start = datetime.datetime.today()
     solver_pool.start()
     finish = datetime.datetime.today()

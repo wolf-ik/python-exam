@@ -1,4 +1,5 @@
-1(even?2 3)
-2(even?2 4)
+True(prime?23)
+False(prime?54677)
+False(prime?6575)
 2(even?2 5)
-True(prime?999983)
+500001(even?1 1000002)
